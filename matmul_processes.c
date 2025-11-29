@@ -14,7 +14,7 @@ typedef double val_t;           // тип элементов в матрицах
 // вспомогательная функция — монотонный таймер в секундах
 static inline double now_sec() {
     struct timespec t;          // структура для времени
-    clock_gettime(CLOCK_MONOTONIC, &t); // читаем монотонное время
+    clock_gettime(CLOCK_REALTIME, &t); // читаем монотонное время
     return t.tv_sec + t.tv_nsec * 1e-9; // возвращаем в секундах
 }
 

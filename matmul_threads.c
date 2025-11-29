@@ -46,9 +46,9 @@ void *worker(void *arg) {
 
 // вспомогательная функция — монотонный таймер в секундах
 static inline double now_sec() {
-    struct timespec t;                                  // структура для времени
-    clock_gettime(CLOCK_MONOTONIC, &t);                 // читаем монотонное время
-    return t.tv_sec + t.tv_nsec * 1e-9;                 // возвращаем значение в секундах (double)
+    struct timespec t;                                  
+    clock_gettime(CLOCK_REALTIME, &t);                  // читаем реальное время
+    return t.tv_sec + t.tv_nsec * 1e-9;                  // возвращаем значение в секундах (double)
 }
 
 int main(int argc, char **argv) {
