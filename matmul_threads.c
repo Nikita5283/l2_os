@@ -1,12 +1,13 @@
 // matmul_threads.c
 // Компиляция: gcc -O2 -pthread matmul_threads.c -o matmul_threads
 
+#define _POSIX_C_SOURCE 199309L // Включаем POSIX 1993 для clock_gettime
+
 #include <stdio.h>              // printf, fprintf
 #include <stdlib.h>             // malloc, free, atoi, rand, srand
 #include <time.h>               // clock_gettime, struct timespec
 #include <pthread.h>            // pthread_create, pthread_join
 
-#define _POSIX_C_SOURCE 199309L // Включаем POSIX 1993 для clock_gettime
 typedef double val_t;           // тип элементов матрицы (double для точности)
 
 // структура аргументов, передаваемых в поток
