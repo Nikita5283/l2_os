@@ -6,6 +6,7 @@
 #include <time.h>               // clock_gettime, struct timespec
 #include <pthread.h>            // pthread_create, pthread_join
 
+#define _POSIX_C_SOURCE 199309L // Включаем POSIX 1993 для clock_gettime
 typedef double val_t;           // тип элементов матрицы (double для точности)
 
 // структура аргументов, передаваемых в поток

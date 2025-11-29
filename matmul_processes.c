@@ -1,6 +1,8 @@
 // matmul_processes.c
 // Компиляция: gcc -O2 matmul_processes.c -o matmul_processes
 
+#define _POSIX_C_SOURCE 199309L // Включаем POSIX 1993 для clock_gettime
+
 #include <stdio.h>              // printf, perror
 #include <stdlib.h>             // malloc, free, atoi, rand, srand, exit
 #include <time.h>               // clock_gettime
