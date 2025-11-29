@@ -45,7 +45,7 @@ void *worker(void *arg) {
     return NULL;                                        // поток завершает выполнение
 }
 
-// вспомогательная функция — монотонный таймер в секундах
+// вспомогательная функция — таймер в секундах
 static inline double now_sec() {
     struct timespec t;                                  
     clock_gettime(CLOCK_REALTIME, &t);                  // читаем реальное время
@@ -62,8 +62,8 @@ int main(int argc, char **argv) {
         if (!strcmp(argv[i], "-n") && i+1<argc) n = atoi(argv[++i]);        // -n размер
         else if (!strcmp(argv[i], "-t") && i+1<argc) threads = atoi(argv[++i]); // -t потоки
         else if (!strcmp(argv[i], "-r") && i+1<argc) repeats = atoi(argv[++i]); // -r повторы
-        else if (!strcmp(argv[i], "-h")) {                                   // -h помощь
-            printf("Usage: %s [-n size] [-t threads] [-r repeats]\n", argv[0]);
+        else if (!strcmp(argv[i], "-h")) {                                   
+            printf("Использование: %s [-n размер] [-t потоки] [-r повторы]\n", argv[0]);
             return 0;
         }
     }
@@ -113,11 +113,11 @@ int main(int argc, char **argv) {
         for (int i = 0; i < threads; ++i) pthread_join(tid[i], NULL);                      // ждём завершения
         double t1 = now_sec();                          // конец замера
         double dt = t1 - t0;                            // время одного повтора
-        printf("rep %d: %.6f s\n", rep+1, dt);         // выводим время повтора
+        printf("Повтор %d: %.6f с\n", rep+1, dt);         // выводим время повтора
         times_sum += dt;                               // прибавляем ко времени для усреднения
     }
 
-    printf("avg: %.6f s (n=%d threads=%d repeats=%d)\n", times_sum / repeats, n, threads, repeats); // вывод среднего
+    printf("Среднее время: %.6f с (n=%d потоки=%d повторы=%d)\n", times_sum / repeats, n, threads, repeats); // вывод среднего
 
     free(A); free(B); free(C); free(tid); free(targs);  // освобождаем всю выделенную память
     return 0;                                           // успешное завершение программы

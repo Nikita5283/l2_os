@@ -3,20 +3,20 @@
 
 #define _POSIX_C_SOURCE 199309L // Включаем POSIX 1993 для clock_gettime
 
-#include <stdio.h>              // printf, perror
-#include <stdlib.h>             // malloc, free, atoi, rand, srand, exit
-#include <time.h>               // clock_gettime
-#include <sys/mman.h>           // mmap, munmap, MAP_SHARED, MAP_ANONYMOUS
-#include <sys/wait.h>           // wait
-#include <unistd.h>             // fork, _exit
-#include <string.h>             // strcmp
+#include <stdio.h> // printf, perror
+#include <stdlib.h> // malloc, free, atoi, rand, srand, exit
+#include <time.h> // clock_gettime
+#include <sys/mman.h> // mmap, munmap, MAP_SHARED, MAP_ANONYMOUS
+#include <sys/wait.h> // wait
+#include <unistd.h> // fork, _exit
+#include <string.h> // strcmp
 
-typedef double val_t;           // тип элементов в матрицах
+typedef double val_t; // тип элементов в матрицах
 
-// вспомогательная функция — монотонный таймер в секундах
+// вспомогательная функция — таймер в секундах
 static inline double now_sec() {
-    struct timespec t;          // структура для времени
-    clock_gettime(CLOCK_REALTIME, &t); // читаем монотонное время
+    struct timespec t; // структура для времени
+    clock_gettime(CLOCK_REALTIME, &t); // читаем время
     return t.tv_sec + t.tv_nsec * 1e-9; // возвращаем в секундах
 }
 
@@ -30,7 +30,10 @@ int main(int argc, char **argv) {
         if (!strcmp(argv[i], "-n") && i+1<argc) n = atoi(argv[++i]);     // -n размер
         else if (!strcmp(argv[i], "-p") && i+1<argc) procs = atoi(argv[++i]); // -p процессы
         else if (!strcmp(argv[i], "-r") && i+1<argc) repeats = atoi(argv[++i]); // -r повторы
-        else if (!strcmp(argv[i], "-h")) { printf("Usage: %s [-n size] [-p procs] [-r repeats]\n", argv[0]); return 0; }
+        else if (!strcmp(argv[i], "-h")) { 
+            printf("Использование: %s [-n размер] [-p процессы] [-r повторы]\n", argv[0]); 
+            return 0; 
+        }
     }
     if (procs < 1) procs = 1;    // защита от неправильного ввода
 
@@ -91,11 +94,11 @@ int main(int argc, char **argv) {
 
         double t1 = now_sec();   // конец замера
         double dt = t1 - t0;     // время одного прогона
-        printf("rep %d: %.6f s\n", rep+1, dt); // выводим время
+        printf("Повтор %d: %.6f с\n", rep+1, dt); // выводим время
         times_sum += dt;         // аккумулируем
     }
 
-    printf("avg: %.6f s (n=%d procs=%d repeats=%d)\n", times_sum / repeats, n, procs, repeats); // среднее
+    printf("Среднее время: %.6f с (n=%d процессы=%d повторы=%d)\n", times_sum / repeats, n, procs, repeats); // среднее
 
     // освобождаем разделяемую память
     munmap(A, sizeof(val_t)*total);
