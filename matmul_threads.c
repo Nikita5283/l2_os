@@ -1,6 +1,3 @@
-// matmul_threads.c
-// Компиляция: gcc -O2 -pthread matmul_threads.c -o matmul_threads
-
 #define _POSIX_C_SOURCE 199309L // Включаем POSIX 1993 года для корректной работы clock_gettime
 
 #include <stdio.h> // printf, fprintf
