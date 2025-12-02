@@ -8,23 +8,23 @@
 #include <unistd.h> // fork, _exit
 #include <string.h> // strcmp
 
-typedef double val_t; // тип элементов в матрицах
+typedef double val_t; // псевдоним(альяс) для типа элементов матрицы
 
-// вспомогательная функция — таймер в секундах
+// функция — таймер
 static inline double now_sec() {
     struct timespec t; // структура для времени
-    clock_gettime(CLOCK_REALTIME, &t); // читаем время
-    return t.tv_sec + t.tv_nsec * 1e-9; // возвращаем в секундах
+    clock_gettime(CLOCK_REALTIME, &t); // заполняем структуру текущим временем
+    return t.tv_sec + t.tv_nsec * 1e-9; // секунды + наносекунды в секундах
 }
 
 int main(int argc, char **argv) {
-    int n = 400;                // размер матриц по умолчанию (можно увеличить)
-    int procs = 4;              // число процессов по умолчанию
-    int repeats = 3;            // число повторов для усреднения
+    int n = 400; // размер матриц по умолчанию
+    int procs = 4; // число процессов по умолчанию
+    int repeats = 3; // число повторов для усреднения
 
     // парсим аргументы командной строки
     for (int i = 1; i < argc; ++i) {
-        if (!strcmp(argv[i], "-n") && i+1<argc) n = atoi(argv[++i]);     // -n размер
+        if (!strcmp(argv[i], "-n") && i+1<argc) n = atoi(argv[++i]); // -n размер
         else if (!strcmp(argv[i], "-p") && i+1<argc) procs = atoi(argv[++i]); // -p процессы
         else if (!strcmp(argv[i], "-r") && i+1<argc) repeats = atoi(argv[++i]); // -r повторы
         else if (!strcmp(argv[i], "-h")) { 
@@ -32,9 +32,9 @@ int main(int argc, char **argv) {
             return 0; 
         }
     }
-    if (procs < 1) procs = 1;    // защита от неправильного ввода
+    if (procs < 1) procs = 1; // защита от неправильного ввода
 
-    size_t total = (size_t)n * n; // общее число элементов
+    size_t total = (size_t)n * n; // общее число элементов в матрице
 
     // выделяем разделяемую память для A, B, C — чтобы дети и родитель видели одни и те же страницы
     val_t *A = mmap(NULL, sizeof(val_t)*total, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
@@ -42,43 +42,43 @@ int main(int argc, char **argv) {
     val_t *C = mmap(NULL, sizeof(val_t)*total, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
     if (A == MAP_FAILED || B == MAP_FAILED || C == MAP_FAILED) { perror("mmap"); return 1; } // проверка mmap
 
-    // Заполняем A и B случайными значениями в разделяемой памяти (не учитывается в замере)
-    srand(12345);                // фиксируем зерно генератора
+    // Заполняем A и B случайными значениями в разделяемой памяти
+    srand(12345); // фиксируем зерно генератора
     for (size_t i = 0; i < total; ++i) {
-        A[i] = (rand() % 100) / 10.0;  // значения 0.0..9.9
+        A[i] = (rand() % 100) / 10.0; // значения 0.0..9.9
         B[i] = (rand() % 100) / 10.0;
-        C[i] = 0.0;                     // заранее обнуляем C
+        C[i] = 0.0; // заранее обнуляем C
     }
 
-    double times_sum = 0.0;      // сумма времён для усреднения
+    double times_sum = 0.0; // сумма времён для усреднения
     for (int rep = 0; rep < repeats; ++rep) {
         // зануляем C перед каждым повтором
         for (size_t i = 0; i < total; ++i) C[i] = 0.0;
 
         // разбиение строк между процессами
-        int base = n / procs;    // целое количество строк на процесс
-        int rem = n % procs;     // остаток строк
-        int cur = 0;             // текущий индекс строки
+        int base = n / procs; // целое количество строк на процесс
+        int rem = n % procs; // остаток строк
+        int cur = 0; // текущий индекс строки
 
         double t0 = now_sec();   // старт замера
         for (int pid = 0; pid < procs; ++pid) {
-            int rows = base + (pid < rem); // распределяем остаток
-            int start = cur;               // начало диапазона
-            int end = cur + rows;          // конец диапазона (не включительно)
-            cur += rows;                   // двигаем указатель на строки для следующего процесса
+            int rows = base + (pid < rem); // распределяем остаток между первыми процессами
+            int start = cur; // начало диапазона
+            int end = cur + rows; // конец диапазона (не включительно)
+            cur += rows; // двигаем указатель на строки для следующего процесса
 
-            pid_t p = fork();              // создаём дочерний процесс
+            pid_t p = fork(); // создаём дочерний процесс
             if (p == -1) { perror("fork"); return 1; } // обработка ошибки fork
-            if (p == 0) {                  // код дочернего процесса
+            if (p == 0) { // код дочернего процесса
                 // дочерний процесс вычисляет свои строки и пишет в разделяемую C
                 for (int i = start; i < end; ++i) {
-                    val_t *Ai = A + (size_t)i * n;   // указатель на строку A[i]
-                    val_t *Ci = C + (size_t)i * n;   // указатель на строку C[i]
+                    val_t *Ai = A + (size_t)i * n; // указатель на строку A[i]
+                    val_t *Ci = C + (size_t)i * n; // указатель на строку C[i]
                     for (int j = 0; j < n; ++j) {
-                        val_t sum = 0.0;              // аккумулируем сумму
+                        val_t sum = 0.0; // аккумулируем сумму
                         for (int k = 0; k < n; ++k)
                             sum += Ai[k] * B[(size_t)k * n + j]; // A[i][k] * B[k][j]
-                        Ci[j] = sum;                  // записываем C[i][j] в разделяемую память
+                        Ci[j] = sum; // записываем C[i][j] в разделяемую память
                     }
                 }
                 _exit(0); // завершаем дочерний процесс корректно (без вызова atexit)
